@@ -211,7 +211,7 @@ Each file follows this Markdown structure:
 |---|---|
 | [LangGraph](https://github.com/langchain-ai/langgraph) | Stateful agentic graph execution with `InMemorySaver` checkpointing |
 | [LangChain](https://github.com/langchain-ai/langchain) | LLM abstractions, prompt templates, tool integrations |
-| [Groq](https://groq.com/) | Ultra-fast LLM inference (LLaMA 3, Gemma 2) |
+| [Groq](https://groq.com/) | Ultra-fast LLM inference (LLaMA 3, GPT-OSS ) |
 | [Tavily](https://tavily.com/) | Real-time web & news search API |
 | [Streamlit](https://streamlit.io/) | Interactive web UI |
 
