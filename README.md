@@ -6,17 +6,17 @@ An end-to-end agentic AI application built with **LangGraph**, **Groq LLMs**, an
 
 ## 📋 Table of Contents
 
-- [Features](#features)
-- [Architecture](#architecture)
-- [Project Structure](#project-structure)
-- [Use Cases](#use-cases)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Running the App](#running-the-app)
-- [Output Files](#output-files)
-- [Tech Stack](#tech-stack)
-- [Screenshots](#screenshots)
+- [Features](#-features)
+- [Architecture](#️-architecture)
+- [Project Structure](#-project-structure)
+- [Use Cases](#-use-cases)
+- [Prerequisites](#-prerequisites)
+- [Installation](#-installation)
+- [Configuration](#-configuration)
+- [Running the App](#-running-the-app)
+- [Output Files](#-output-files)
+- [Tech Stack](#-tech-stack)
+- [Screenshots](#-screenshots)
 
 ---
 
