@@ -77,9 +77,11 @@ class GraphBuilder:
 
 
 
-    def setup_graph(self, usecase: str):
+    def setup_graph(self, usecase: str, checkpointer=None):
         """
         Sets up the graph for the selected use case.
+        Accepts an optional checkpointer for in-session memory (Basic Chatbot / Chatbot With Web).
+        AI News does not use a checkpointer — it is a pipeline, not a chat.
         """
         if usecase == "Basic Chatbot":
             self.basic_chatbot_build_graph()
@@ -88,4 +90,4 @@ class GraphBuilder:
         if usecase == "AI News":
             self.ai_news_builder_graph()
 
-        return self.graph_builder.compile()
+        return self.graph_builder.compile(checkpointer=checkpointer)

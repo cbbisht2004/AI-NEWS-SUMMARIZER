@@ -1,48 +1,74 @@
 import streamlit as st
-from langchain_core.messages import HumanMessage,AIMessage,ToolMessage
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 import json
 
 
 class DisplayResultStreamlit:
-    def __init__(self,usecase,graph,user_message):
-        self.usecase= usecase
+    def __init__(self, usecase, graph, user_message, thread_id=None):
+        self.usecase = usecase
         self.graph = graph
         self.user_message = user_message
+        self.thread_id = thread_id
 
     def display_result_on_ui(self):
-        usecase= self.usecase
+        usecase = self.usecase
         graph = self.graph
         user_message = self.user_message
+        config = {"configurable": {"thread_id": self.thread_id}} if self.thread_id else {}
         print(user_message)
-        if usecase =="Basic Chatbot":
-                for event in graph.stream({'messages':("user",user_message)}):
-                    print(event.values())
-                    for value in event.values():
-                        print(value['messages'])
-                        with st.chat_message("user"):
-                            st.write(user_message)
-                        with st.chat_message("assistant"):
-                            st.write(value["messages"].content)
 
-        elif usecase=="Chatbot With Web":
-             # Prepare state and invoke the graph
-            initial_state = {"messages": [user_message]}
-            res = graph.invoke(initial_state)
-            for message in res['messages']:
-                if type(message) == HumanMessage:
+        if usecase == "Basic Chatbot":
+            # Replay prior turns so they remain visible on every Streamlit rerun
+            for human_msg, ai_msg in st.session_state.get("chat_history", []):
+                with st.chat_message("user"):
+                    st.write(human_msg)
+                with st.chat_message("assistant"):
+                    st.write(ai_msg)
+
+            # Stream current turn; InMemorySaver appends to checkpoint automatically
+            ai_response = ""
+            for event in graph.stream({"messages": ("user", user_message)}, config=config):
+                print(event.values())
+                for value in event.values():
+                    print(value["messages"])
+                    ai_response = value["messages"].content
                     with st.chat_message("user"):
-                        st.write(message.content)
-                elif type(message)==ToolMessage:
-                    with st.chat_message("ai"):
-                        st.write("Tool Call Start")
-                        st.write(message.content)
-                        st.write("Tool Call End")
-                elif type(message)==AIMessage and message.content:
+                        st.write(user_message)
                     with st.chat_message("assistant"):
-                        st.write(message.content)
-                        
+                        st.write(ai_response)
+
+            # Persist turn in display history
+            if ai_response:
+                st.session_state.chat_history.append((user_message, ai_response))
+
+        elif usecase == "Chatbot With Web":
+            # Replay prior turns from display history (clean user/AI pairs only)
+            for human_msg, ai_msg in st.session_state.get("chat_history", []):
+                with st.chat_message("user"):
+                    st.write(human_msg)
+                with st.chat_message("assistant"):
+                    st.write(ai_msg)
+
+            # Invoke graph — InMemorySaver passes full history to the LLM internally
+            initial_state = {"messages": [user_message]}
+            res = graph.invoke(initial_state, config=config)
+
+            # Extract only the final AI response — skip ToolMessages and intermediate steps
+            ai_response = ""
+            for message in reversed(res["messages"]):
+                if isinstance(message, AIMessage) and message.content:
+                    ai_response = message.content
+                    break
+
+            with st.chat_message("user"):
+                st.write(user_message)
+            if ai_response:
+                with st.chat_message("assistant"):
+                    st.write(ai_response)
+                st.session_state.chat_history.append((user_message, ai_response))
 
         elif usecase == "AI News":
+            # Pipeline usecase — no checkpointer, no thread_id, no chat memory
             frequency = self.user_message
             with st.spinner("Fetching and summarizing news... ⏳"):
                 result = graph.invoke({"messages": frequency})

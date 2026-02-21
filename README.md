@@ -24,10 +24,11 @@ An end-to-end agentic AI application built with **LangGraph**, **Groq LLMs**, an
 
 | Feature | Description |
 |---|---|
-| **Basic Chatbot** | Chat directly with a Groq-hosted LLM (LLaMA 3 / Gemma 2) |
-| **Chatbot With Web** | LLM augmented with real-time Tavily web search (ReAct loop) |
+| **Basic Chatbot** | Chat directly with a Groq-hosted LLM with full in-session memory |
+| **Chatbot With Web** | LLM augmented with real-time Tavily web search (ReAct loop) with in-session memory |
 | **AI News Summariser** | Automated pipeline: fetch → summarise → save AI news to Markdown |
-| **Multiple LLMs** | Supports `llama3-8b-8192`, `llama3-70b-8192`, `gemma2-9b-it` via Groq |
+| **Multiple LLMs** | Supports `llama-3.1-8b-instant`, `llama-3.3-70b-versatile`, `openai/gpt-oss-120b` via Groq |
+| **In-session memory** | Conversations persist across Streamlit reruns via `InMemorySaver` checkpointer and `thread_id` |
 | **Time-framed news** | Fetch news for the last day, week, or month |
 | **Persistent summaries** | Summaries saved as Markdown files for later review |
 | **Streamlit UI** | Clean sidebar-driven interface with API key inputs |
@@ -102,10 +103,10 @@ AI NEWS SUMMARISER/
 ## 🧩 Use Cases
 
 ### 1. Basic Chatbot
-A minimal stateful chatbot. User messages are sent directly to the selected Groq LLM and the response is streamed back via LangGraph's `graph.stream()`.
+A stateful chatbot with **in-session memory**. User messages are streamed through LangGraph's `graph.stream()` and the full conversation history is preserved across Streamlit reruns using an `InMemorySaver` checkpointer keyed by a per-session `thread_id`. Prior turns are replayed in the UI on each rerun.
 
 ### 2. Chatbot With Web
-Extends the basic chatbot with a **Tavily web search tool**. The LLM decides when to call the tool (ReAct pattern) and loops back to synthesise a final answer using the retrieved content. Requires a **Tavily API key**.
+Extends the basic chatbot with a **Tavily web search tool** and **in-session memory**. The LLM decides when to call the tool (ReAct pattern) and loops back to synthesise a final answer. Only the clean final AI response is shown — intermediate tool call results are hidden. Context from prior turns is passed automatically via the checkpointer, so follow-up questions (e.g. "who is he?") resolve without redundant searches. Requires a **Tavily API key**.
 
 ### 3. AI News Summariser
 A three-node agentic pipeline:
@@ -156,7 +157,7 @@ All UI labels, available models, and use-case options are controlled via [`src/l
 PAGE_TITLE       = LangGraph: Build Stateful Agentic AI graph
 LLM_OPTIONS      = Groq
 USECASE_OPTIONS  = Basic Chatbot, Chatbot With Web, AI News
-GROQ_MODEL_OPTIONS = llama3-8b-8192, llama3-70b-8192, gemma2-9b-it
+GROQ_MODEL_OPTIONS = llama-3.1-8b-instant, llama-3.3-70b-versatile, openai/gpt-oss-120b
 ```
 
 To add a new Groq model, simply append it (comma-separated) to `GROQ_MODEL_OPTIONS`.
@@ -175,7 +176,7 @@ The app will open in your browser at `http://localhost:8501`.
 
 **Sidebar workflow:**
 1. Select **LLM** → `Groq`
-2. Select a **Model** (e.g. `llama3-70b-8192`)
+2. Select a **Model** (e.g. `llama-3.3-70b-versatile`)
 3. Enter your **GROQ API Key**
 4. Select a **Use Case**
 5. For *Chatbot With Web* or *AI News*, enter your **Tavily API Key**
@@ -208,7 +209,7 @@ Each file follows this Markdown structure:
 
 | Library | Purpose |
 |---|---|
-| [LangGraph](https://github.com/langchain-ai/langgraph) | Stateful agentic graph execution |
+| [LangGraph](https://github.com/langchain-ai/langgraph) | Stateful agentic graph execution with `InMemorySaver` checkpointing |
 | [LangChain](https://github.com/langchain-ai/langchain) | LLM abstractions, prompt templates, tool integrations |
 | [Groq](https://groq.com/) | Ultra-fast LLM inference (LLaMA 3, Gemma 2) |
 | [Tavily](https://tavily.com/) | Real-time web & news search API |
